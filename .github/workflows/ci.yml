@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Validate Ruby syntax of formula
+        run: ruby -c Formula/osprey.rb
+
+      - name: Check for banned legacy terms
+        run: |
+          PATTERN='osprey[-]engine|osprey[-]pro|Wa[R]P|Super[K]Means|S3[V]ec'
+          if grep -rnE "$PATTERN" Formula/ README.md; then
+            echo "Error: Banned legacy term found!"
+            exit 1
+          fi
